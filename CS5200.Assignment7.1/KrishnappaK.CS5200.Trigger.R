@@ -174,28 +174,109 @@ deleteTriggerOnOrderDetailsTable <- function(dbCon) {
 #* @param dbCon - database connection
 #*****************************************
 validateInsertTrigger <- function(dbCon) {
-  
-  # validate the insert trigger using the testthat package
-  test_that("Test Insert Trigger: experience_level table should contain 3 rows", {
-    experience_level <- dbReadTable(dbCon, "experience_level")
-    expect_equal(nrow(experience_level), 3)
+  tryCatch({
+    cat("Validating insert trigger\n")
+    # sample data for validation
+    employeeIdToTest <- 3
+    productIdToTest <- 3
+    orderIdToTest <- 10253
+    
+    # get the total sold of employee before inserting a row in OrderDetails
+    employee <- dbGetQuery(dbCon, sprintf("SELECT * FROM Employees where EmployeeID = %s;", employeeIdToTest))
+    cat(sprintf("Total sold of employee for id %s: %s\n", employeeIdToTest, employee$TotalSold))
+    
+    # get the price of the product
+    productPrice <- dbGetQuery(dbCon, sprintf("SELECT Price FROM Products where ProductID = %s;", productIdToTest))
+    cat(sprintf("Price of product for id %s: %s\n", productIdToTest, productPrice$Price))
+    
+    # insert a row in OrderDetails with quantity 1
+    dbExecute(dbCon, sprintf("INSERT INTO OrderDetails (OrderID, ProductID, Quantity) VALUES (%s, %s, 1);", orderIdToTest, productIdToTest))
+    
+    # get the total sold of employee after inserting a row in OrderDetails
+    employeeAfterInsert <- dbGetQuery(dbCon, sprintf("SELECT * FROM Employees where EmployeeID = %s;", employeeIdToTest))
+    cat(sprintf("Total sold of employee after inserting 1 quantity for id %s: %s\n", employeeIdToTest, employeeAfterInsert$TotalSold))
+    
+    # validate the trigger by checking if the TotalSold column in Employees table is updated
+    cat(sprintf("Expected increase in price: %s, actual:%s\n", productPrice$Price * 1, employeeAfterInsert$TotalSold - employee$TotalSold))
+    test_that("Test Insert Trigger:", {
+      expect_equal(employeeAfterInsert$TotalSold - employee$TotalSold, productPrice$Price * 1)
+    })
+    cat("________________________________________________\n")
+  }, error = function(e) {
+    cat("Error during validation of insert trigger: ", e$message, "\n")
   })
-  
 }
 
+
 validateUpdateTrigger <- function(dbCon) {
-  # validate the update trigger using the testthat package
-  test_that("Test Update Trigger: author table should contain 4 rows", {
-    author <- dbReadTable(dbCon, "author")
-    expect_equal(nrow(author), 4)
+  tryCatch({
+    cat("Validating update trigger\n")
+    # sample data for validation
+    employeeIdToTest <- 3
+    productIdToTest <- 3
+    orderIdToTest <- 10253
+    
+    # get the total sold of employee before updating a row in OrderDetails
+    employee <- dbGetQuery(dbCon, sprintf("SELECT * FROM Employees where EmployeeID = %s;", employeeIdToTest))
+    cat(sprintf("Total sold of employee for id %s: %s\n", employeeIdToTest, employee$TotalSold))
+    
+    # get the price of the product
+    productPrice <- dbGetQuery(dbCon, sprintf("SELECT Price FROM Products where ProductID = %s;", productIdToTest))
+    cat(sprintf("Price of product for id %s: %s\n", productIdToTest, productPrice$Price))
+    
+    # update the quantity of a row in OrderDetails to 2
+    dbExecute(dbCon, sprintf("UPDATE OrderDetails SET Quantity = 2 WHERE OrderID = %s AND ProductID = %s;", orderIdToTest, productIdToTest))
+    
+    # get the total sold of employee after updating a row in OrderDetails
+    employeeAfterUpdate <- dbGetQuery(dbCon, sprintf("SELECT * FROM Employees where EmployeeID = %s;", employeeIdToTest))
+    cat(sprintf("Total sold of employee after updating quantity to 2 for id %s: %s\n", employeeIdToTest, employeeAfterUpdate$TotalSold))
+    
+    # validate the trigger by checking if the TotalSold column in Employees table is updated
+    cat(sprintf("Expected increase in price: %s, actual:%s\n", productPrice$Price * 1, employeeAfterUpdate$TotalSold - employee$TotalSold))
+    
+    # assert the expected and actual values
+    test_that("Test Insert Trigger:", {
+      expect_equal(employeeAfterUpdate$TotalSold - employee$TotalSold, productPrice$Price * 1)
+    })
+    cat("________________________________________________\n")
+  }, error = function(e) {
+    cat("Error during validation of update trigger: ", e$message, "\n")
   })
 }
 
 validateDeleteTrigger <- function(dbCon) {
-  # validate the delete trigger using the testthat package
-  test_that("Test Delete Trigger: author table should contain 4 rows", {
-    author <- dbReadTable(dbCon, "author")
-    expect_equal(nrow(author), 4)
+  tryCatch({
+    cat("Validating delete trigger\n")
+    # sample data for validation
+    employeeIdToTest <- 3
+    productIdToTest <- 3
+    orderIdToTest <- 10253
+    
+    # get the total sold of employee before deleting a row in OrderDetails
+    employee <- dbGetQuery(dbCon, sprintf("SELECT * FROM Employees where EmployeeID = %s;", employeeIdToTest))
+    cat(sprintf("Total sold of employee for id %s: %s\n", employeeIdToTest, employee$TotalSold))
+    
+    # get the price of the product
+    productPrice <- dbGetQuery(dbCon, sprintf("SELECT Price FROM Products where ProductID = %s;", productIdToTest))
+    cat(sprintf("Price of product for id %s: %s\n", productIdToTest, productPrice$Price))
+    
+    # delete the row in OrderDetails
+    dbExecute(dbCon, sprintf("DELETE FROM OrderDetails WHERE OrderID = %s AND ProductID = %s;", orderIdToTest, productIdToTest))
+    
+    # get the total sold of employee after deleting a row in OrderDetails
+    employeeAfterDelete <- dbGetQuery(dbCon, sprintf("SELECT * FROM Employees where EmployeeID = %s;", employeeIdToTest))
+    cat(sprintf("Total sold of employee after deleting quantity for id %s: %s\n", employeeIdToTest, employeeAfterDelete$TotalSold))
+    
+    # validate the trigger by checking if the TotalSold column in Employees table is updated
+    cat(sprintf("Expected decrease in price: %s, actual:%s\n", productPrice$Price * 2, employee$TotalSold - employeeAfterDelete$TotalSold))
+    
+    # assert the expected and actual values
+    test_that("Test Insert Trigger:", {
+      expect_equal(employee$TotalSold - employeeAfterDelete$TotalSold, productPrice$Price * 2)
+    })
+    cat("________________________________________________\n")
+  }, error = function(e) {
+    cat("Error during validation of delete trigger: ", e$message, "\n")
   })
 }
 
