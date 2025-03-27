@@ -1,0 +1,152 @@
+---
+title: 'ASSIGNMENT 06.2'
+subtitle: 'Query Tabular Data with SQL'
+author: "Krishnappa, Kushal"
+date: "18th February 2025"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r echo=FALSE,warning=FALSE}
+# loading the required libraries
+suppressMessages({
+  library(sqldf)
+  library(kableExtra)
+})
+```
+
+## Analysis of Patient Data
+```{r echo=FALSE, warning=FALSE}
+# reading the csv file
+diabetesData <- read.csv(
+  "https://s3.us-east-2.amazonaws.com/artificium.us/datasets/diabetes_data.csv",
+  header = TRUE,
+  stringsAsFactors = FALSE)
+
+# total patient records
+totalPatientsSQL <- "SELECT COUNT(*) AS totalPatients FROM diabetesData;"
+totalPatients <- sqldf(totalPatientsSQL)$totalPatients
+
+# mean age for all patients
+meanAgeSQL <- "SELECT AVG(age) AS meanAge FROM diabetesData;"
+meanAge <- sqldf(meanAgeSQL)$meanAge
+
+# mean age of male patients
+meanAgeMaleSQL <- "SELECT AVG(age) AS meanAgeMale FROM diabetesData WHERE Sex = 0;"
+meanAgeMale <- sqldf(meanAgeMaleSQL)$meanAgeMale
+
+# mean age of female patients
+meanAgeFemaleSQL <- "SELECT AVG(age) AS meanAgeFemale FROM diabetesData WHERE Sex = 1;"
+meanAgeFemale <- sqldf(meanAgeFemaleSQL)$meanAgeFemale
+
+# patients eating both fruits and vegetables
+patientsEatFruitsVeggiesSQL <- "SELECT COUNT(*) AS patientsEatFruitsVeggies FROM diabetesData WHERE Fruits = 1 AND Veggies = 1;"
+patientsEatFruitsVeggies <- sqldf(patientsEatFruitsVeggiesSQL)$patientsEatFruitsVeggies
+patientsEatFruitsVeggiesPercent <- (patientsEatFruitsVeggies / totalPatients) * 100
+
+# patients who are smokers
+patientsSmokersSQL <- "SELECT COUNT(*) AS patientsSmokers FROM diabetesData WHERE Smoker = 1;"
+patientsSmokers <- sqldf(patientsSmokersSQL)$patientsSmokers
+patientsSmokersPercent <- (patientsSmokers / totalPatients) * 100
+
+# patients with BMI over 26 and no physical activity
+patientsNoPhysicalActivitySQL <- "SELECT COUNT(*) AS patientsNoPhysicalActivity FROM diabetesData WHERE BMI > 26 AND PhysActivity = 0;"
+patientsNoPhysicalActivity <- sqldf(patientsNoPhysicalActivitySQL)$patientsNoPhysicalActivity
+patientsNoPhysicalActivityPercent <- (patientsNoPhysicalActivity / totalPatients) * 100
+```
+The data set has **`r totalPatients`** patient records. Males were coded in the data as 0 while females were coded as 1. The mean age for all patients was **`r round(meanAge, 1)`** years (female **`r round(meanAgeFemale, 1)`**, male **`r round(meanAgeMale, 1)`**). **`r round(patientsEatFruitsVeggiesPercent, 1)`%** of all patients reported eating both fruits and vegetables. **`r round(patientsSmokersPercent, 1)`%** of all patients were smokers. **`r round(patientsNoPhysicalActivityPercent, 1)`%** of all patients with a BMI over 26 did not report any physical activity.
+
+## Summary of Health Characteristics
+```{r echo=FALSE, warning=FALSE}
+#*****************************************
+#* Total Males and Females
+#*****************************************
+totalMalesSQL <- "SELECT COUNT(*) AS totalMales FROM diabetesData WHERE Sex = 0;"
+totalMales <- sqldf(totalMalesSQL)$totalMales
+
+totalFemalesSQL <- "SELECT COUNT(*) AS totalFemales FROM diabetesData WHERE Sex = 1;"
+totalFemales <- sqldf(totalFemalesSQL)$totalFemales
+
+#*****************************************
+#* Average Age
+#*****************************************
+averageAgeMale <- sqldf("SELECT AVG(age) FROM diabetesData WHERE Sex = 0")$`AVG(age)`
+averageAgeFemale <- sqldf("SELECT AVG(age) FROM diabetesData WHERE Sex = 1")$`AVG(age)`
+
+#*****************************************
+#* Percent Diagnosed With Diabetes
+#*****************************************
+totalMalesWithDiabetes <- sqldf("SELECT COUNT(*) AS count FROM diabetesData WHERE Diabetes = 1 AND Sex = 0;")$count
+percentDiagnosedWithDiabetesMale <- (totalMalesWithDiabetes / totalMales) * 100
+
+totalFemalesWithDiabetes <- sqldf("SELECT COUNT(*) AS count FROM diabetesData WHERE Diabetes = 1 AND Sex = 1;")$count
+percentDiagnosedWithDiabetesFemale <- (totalFemalesWithDiabetes / totalFemales) * 100
+
+#*****************************************
+#* Percent with High Cholesterol
+#*****************************************
+totalMalesWithHighCholesterol <- sqldf("SELECT COUNT(*) AS count FROM diabetesData WHERE HighChol = 1 AND Sex = 0;")$count
+percentHighCholesterolMale <- (totalMalesWithHighCholesterol / totalMales) * 100
+
+totalFemalesWithHighCholesterol <- sqldf("SELECT COUNT(*) AS count FROM diabetesData WHERE HighChol = 1 AND Sex = 1;")$count
+percentHighCholesterolFemale <- (totalFemalesWithHighCholesterol / totalFemales) * 100
+
+#*****************************************
+#* Percent With A BMI Of More Than 2 Standard Deviation Above The Mean
+#*****************************************
+bmiMean <- sqldf("SELECT AVG(BMI) AS bmiMean FROM diabetesData;")$bmiMean
+bmiSD <- sd(diabetesData$BMI, na.rm = TRUE)
+bmiThreshold <- bmiMean + (2 * bmiSD)
+
+totalMalesWithHighBMI <- sqldf(sprintf("SELECT COUNT(*) AS count FROM diabetesData WHERE BMI > %f AND Sex = 0;", bmiThreshold))$count
+percentHighBMIMale <- (totalMalesWithHighBMI / totalMales) * 100
+
+totalFemalesWithHighBMI <- sqldf(sprintf("SELECT COUNT(*) AS count FROM diabetesData WHERE BMI > %f AND Sex = 1;", bmiThreshold))$count
+percentHighBMIFemale <- (totalFemalesWithHighBMI / totalFemales) * 100
+
+#*****************************************
+#* Percent Without Physical Activity
+#*****************************************
+totalMalesWithoutPhysicalActivity <- sqldf("SELECT COUNT(*) AS count FROM diabetesData WHERE PhysActivity = 0 AND Sex = 0;")$count
+percentNoPhysActivityMale <- (totalMalesWithoutPhysicalActivity / totalMales) * 100
+
+totalFemalesWithoutPhysicalActivity <- sqldf("SELECT COUNT(*) AS count FROM diabetesData WHERE PhysActivity = 0 AND Sex = 1;")$count
+percentNoPhysActivityFemale <- (totalFemalesWithoutPhysicalActivity / totalFemales) * 100
+
+#*****************************************
+#* Percent with High Blood Pressure
+#*****************************************
+totalMalesWithHighBP <- sqldf("SELECT COUNT(*) AS count FROM diabetesData WHERE HighBP = 1 AND Sex = 0;")$count
+percentHighBPMale <- (totalMalesWithHighBP / totalMales) * 100
+
+totalFemalesWithHighBP <- sqldf("SELECT COUNT(*) AS count FROM diabetesData WHERE HighBP = 1 AND Sex = 1;")$count
+percentHighBPFemale <- (totalFemalesWithHighBP / totalFemales) * 100
+
+#*****************************************
+#* Display Table
+#*****************************************
+summaryTable <- data.frame(
+  "Health Metric" = c("average age", 
+  "percent diagnosed with diabetes", 
+  "percent with high cholesterol", 
+  "percent with a BMI of more than 2 standard deviations above the mean", 
+  "percent without physical activity", 
+  "percent with high blood pressure"),
+  "Male" = round(c(averageAgeMale, 
+  percentDiagnosedWithDiabetesMale, 
+  percentHighCholesterolMale, 
+  percentHighBMIMale, 
+  percentNoPhysActivityMale, 
+  percentHighBPMale), 1),
+  "Female" = round(c(averageAgeFemale, 
+  percentDiagnosedWithDiabetesFemale, 
+  percentHighCholesterolFemale, 
+  percentHighBMIFemale, 
+  percentNoPhysActivityFemale, 
+  percentHighBPFemale), 1)
+)
+
+kable(summaryTable, col.names = c("Health Characteristic", "Male", "Female"), format = "html") %>%
+kable_styling(bootstrap_options = c("striped", "hover", "responsive"), full_width = TRUE)
+```
