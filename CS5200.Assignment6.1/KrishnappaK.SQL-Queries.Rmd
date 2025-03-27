@@ -1,0 +1,259 @@
+---
+title: "Assignment 06.1"
+author: "Krishnappa, Kushal"
+date: "Spring 2025"
+output:
+  html_document:
+    df_print: paged
+subtitle: Query a Database with SQL
+---
+
+```{r echo=FALSE}
+
+#*****************************************
+#* Install Packages
+#* @param packages - list of packages required for script to run
+#*****************************************
+installPackagesOnDemand <- function(packages) {
+  # install packages not yet installed
+  installed_packages <- packages %in% rownames(installed.packages())
+  if (any(installed_packages == FALSE)) {
+    install.packages(packages[!installed_packages])
+  }
+  # load all packages by applying 'library' function
+  invisible(lapply(packages, library, character.only = TRUE))
+}
+
+#*****************************************
+#* Create a SQLite Database Connection
+#* @param dbName - name of the database
+#* @param dbPath - path to the database. default is current directory.
+#*****************************************
+createSQLiteDBConnection <- function(dbName, dbPath = "") {
+  # create a full db path
+  dbFile = paste0(dbPath,dbName)
+  # create a connection to the database
+  dbCon <- dbConnect(RSQLite::SQLite(), dbFile)
+  return(dbCon)
+}
+
+dbName = "OrdersDB.sqlitedb.db" # database name to connect to
+installPackagesOnDemand(c("RSQLite")) # install RSQLite package
+dbCon =  createSQLiteDBConnection(dbName) # create a connection to the database
+```
+
+### 1. What are the names and contacts of all suppliers, sorted by contact name?
+```{sql suppliersContact, connection = dbCon}
+SELECT SupplierName, ContactName, Phone
+FROM Suppliers
+ORDER BY ContactName;
+```
+
+
+### 2. What are the number of suppliers for each country? List the country and the number of suppliers renamed to 'NumSuppliers'.
+```{sql suppliersPerCountry, connection = dbCon}
+SELECT Country, COUNT(*) AS NumSuppliers
+FROM Suppliers
+GROUP BY Country
+ORDER BY Country;
+```
+
+
+### 3. List the number of orders by customer ID and name, ordered from least to most, restricted to those customers who have placed at least one order.
+```{sql ordersPerCustomer, connection = dbCon}
+SELECT C.CustomerID, C.CustomerName, COUNT(O.OrderID) AS OrderCount
+FROM Customers C
+JOIN Orders O ON C.CustomerID = O.CustomerID
+GROUP BY C.CustomerID
+HAVING OrderCount > 0
+ORDER BY OrderCount ASC
+```
+
+
+### 4. What is the order id of the most recent order?
+```{sql mostRecentOrderID, connection = dbCon}
+SELECT OrderID
+FROM Orders
+ORDER BY OrderDate DESC
+LIMIT 1;
+```
+
+
+### 5. What are the total number of unique orders delivered by each shipper, ordered alphabetically by shipper name?
+```{sql ordersByShipper, connection = dbCon}
+SELECT S.ShipperName, COUNT(DISTINCT O.OrderID) AS TotalOrders
+FROM Shippers S
+JOIN Orders O ON S.ShipperID = O.ShipperID
+GROUP BY S.ShipperName
+ORDER BY S.ShipperName;
+```
+
+
+### 6. How many employees never worked with a single customer, i.e., they appear in the Employees table but not in the Orders table?
+```{sql employeesWithoutOrders, connection = dbCon}
+SELECT COUNT(*) AS EmployeesWithoutOrders
+FROM Employees E
+LEFT JOIN Orders O ON E.EmployeeID = O.EmployeeID
+WHERE O.OrderID IS NULL;
+```
+
+
+### 7. How many products contain "Louisiana" at the beginning of the name of the product?
+```{sql louisianaProducts, connection = dbCon}
+SELECT COUNT(*) AS LouisianaProducts
+FROM Products
+WHERE ProductName LIKE 'Louisiana%';
+```
+
+
+### 8. What is the total number of distinct countries to which at least one order was shipped?
+```{sql countriesWithOrders, connection = dbCon}
+SELECT COUNT(DISTINCT C.Country) AS CountriesWithOrders
+FROM Customers C
+JOIN Orders O ON C.CustomerID = O.CustomerID;
+```
+
+
+### 9. What is the total amount (in terms of revenue) as well as the total number of orders sold by each employee? List the employee name, the total amount sold, and the total number of orders.
+```{sql employeeSales, connection = dbCon}
+SELECT E.FirstName, E.LastName, SUM(OD.Quantity * P.Price) AS TotalRevenue, COUNT(DISTINCT O.OrderID) AS TotalOrders
+FROM Employees E
+JOIN Orders O ON E.EmployeeID = O.EmployeeID
+JOIN OrderDetails OD ON O.OrderID = OD.OrderID
+JOIN Products P ON OD.ProductID = P.ProductID
+GROUP BY E.EmployeeID
+ORDER BY TotalRevenue DESC;
+```
+
+
+### 10. Which supplier sells the least number of products and supplies at least one product?
+```{sql supplierWithLeastProducts, connection = dbCon}
+WITH SupplierProductCounts AS (
+    SELECT S.SupplierName, COUNT(P.ProductID) AS ProductCount
+    FROM Suppliers S
+    JOIN Products P ON S.SupplierID = P.SupplierID
+    GROUP BY S.SupplierName
+)
+SELECT SupplierName
+FROM SupplierProductCounts
+WHERE ProductCount = (SELECT MIN(ProductCount) FROM SupplierProductCounts WHERE ProductCount > 0);
+```
+
+
+### 11. Which product was ordered most often by different customers?
+```{sql mostOrderedProduct, connection = dbCon}
+WITH ProductOrders AS (
+    SELECT P.ProductName, COUNT(DISTINCT O.CustomerID) AS OrderCount
+    FROM Products P
+    JOIN OrderDetails OD ON P.ProductID = OD.ProductID
+    JOIN Orders O ON OD.OrderID = O.OrderID
+    GROUP BY P.ProductName
+)
+SELECT ProductName
+FROM ProductOrders
+WHERE OrderCount = (SELECT MAX(OrderCount) FROM ProductOrders);
+```
+
+
+### 12. Which product has the most number of units sold?
+```{sql productMostUnitsSold, connection = dbCon}
+WITH ProductSales AS (
+    SELECT P.ProductName, SUM(OD.Quantity) AS TotalUnitsSold
+    FROM Products P
+    JOIN OrderDetails OD ON P.ProductID = OD.ProductID
+    GROUP BY P.ProductName
+)
+SELECT ProductName
+FROM ProductSales
+WHERE TotalUnitsSold = (SELECT MAX(TotalUnitsSold) FROM ProductSales);
+```
+
+
+### 13. What is the total amount spent by all customers who do live in either USA or Canada?
+```{sql totalAmountSpentUSACanada, connection = dbCon}
+SELECT SUM(OD.Quantity * P.Price) AS TotalSpent
+FROM Customers C
+JOIN Orders O ON C.CustomerID = O.CustomerID
+JOIN OrderDetails OD ON O.OrderID = OD.OrderID
+JOIN Products P ON OD.ProductID = P.ProductID
+WHERE C.Country IN ('USA', 'Canada');
+```
+
+
+### 14. What is the difference in spending between the country to which the most was sold versus the country to which the least was sold?
+```{sql spendingDifference, connection = dbCon}
+WITH CountrySpending AS (
+    SELECT C.Country, SUM(OD.Quantity * P.Price) AS TotalSpent
+    FROM Customers C
+    JOIN Orders O ON C.CustomerID = O.CustomerID
+    JOIN OrderDetails OD ON O.OrderID = OD.OrderID
+    JOIN Products P ON OD.ProductID = P.ProductID
+    GROUP BY C.Country
+)
+SELECT MAX(TotalSpent) - MIN(TotalSpent) AS SpendingDifference
+FROM CountrySpending;
+```
+
+
+### 15. Which country has the most customers?
+```{sql countryMostCustomers, connection = dbCon}
+SELECT Country, COUNT(CustomerID) AS NumCustomers
+FROM Customers
+GROUP BY Country
+ORDER BY NumCustomers DESC
+LIMIT 1;
+```
+
+
+### 16. Which employee sold the most in terms of "dollar amount" sold?
+```{sql topSellingEmployee, connection = dbCon}
+SELECT E.FirstName, E.LastName, SUM(OD.Quantity * P.Price) AS TotalRevenue
+FROM Employees E
+JOIN Orders O ON E.EmployeeID = O.EmployeeID
+JOIN OrderDetails OD ON O.OrderID = OD.OrderID
+JOIN Products P ON OD.ProductID = P.ProductID
+GROUP BY E.EmployeeID
+ORDER BY TotalRevenue DESC
+LIMIT 1;
+```
+
+
+### 17. Which customers (name and ID) have never bought anything?
+```{sql customersWithoutOrders, connection = dbCon}
+SELECT C.CustomerID, C.CustomerName
+FROM Customers C
+LEFT JOIN Orders O ON C.CustomerID = O.CustomerID
+WHERE O.OrderID IS NULL
+```
+
+
+### 18. What is the average price of the products sold by each supplier? List the supplier and the average product price.
+```{sql avgProductPriceBySupplier, connection = dbCon}
+SELECT S.SupplierName, AVG(P.Price) AS AvgPrice
+FROM Suppliers S
+JOIN Products P ON S.SupplierID = P.SupplierID
+GROUP BY S.SupplierName
+```
+
+
+### 19. To which customer was the most recent order sent? List the Order ID, customer name, and country to which the order was shipped.
+```{sql mostRecentOrderCustomer, connection = dbCon}
+SELECT C.CustomerName
+FROM Orders O
+JOIN Customers C ON O.CustomerID = C.CustomerID
+ORDER BY O.OrderDate DESC
+LIMIT 1;
+```
+
+
+### 20. From how many different (unique) suppliers do the products come from?
+```{sql uniqueProductSuppliers, connection = dbCon}
+SELECT COUNT(DISTINCT SupplierID) AS UniqueSuppliers
+FROM Products;
+```
+
+
+```{r echo=FALSE}
+# close the database connection
+dbDisconnect(dbCon)
+```
