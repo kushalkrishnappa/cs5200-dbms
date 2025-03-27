@@ -1,0 +1,51 @@
+﻿VisitID,Restaurant,ServerEmpID,ServerName,StartDateHired,EndDateHired,HourlyRate,ServerBirthDate,ServerTIN,VisitDate,VisitTime,MealType,PartySize,Genders,WaitTime,CustomerName,CustomerPhone,CustomerEmail,LoyaltyMember,FoodBill,TipAmount,DiscountApplied,PaymentMethod,orderedAlcohol,AlcoholBill
+1,Patty Palace,1843,"Walker, Mia",10/24/22,,15.25,7/3/65,700-18-1686,10/27/23,7:08,Breakfast,3,uff,1,,,,FALSE,24.2,0.15,0,Mobile Payment,no,0
+2,Bun Fi,,N/A,0000-00-00,9999-99-99,0,,,1/26/19,17:08,Take-Out,1,f,0,,,,FALSE,18.34,0,0,Credit Card,no,0
+3,Big Bite Burgers,1589,"Green, David",4/9/22,,16.5,7/13/87,544-47-7241,6/14/23,19:37,Dinner,1,m,2,,,,FALSE,21.8,0.15,0,Mobile Payment,yes,10.3125
+4,Bite & Bun,2688,"Allen, Zoe K.",4/17/23,,14,,770-57-6232,11/23/23,8:59,Take-Out,5,umfuf,1,Merritt Atkinson,(618) 437-7815,ultricies.sem@hotmail.ca,TRUE,101.19,0,0.1,Cash,no,0
+5,Bite & Bun,2672,"Harris, Victoria",11/2/21,3/31/23,12.75,9/20/95,751-68-1226,11/16/22,16:38,Take-Out,1,u,0,,,,FALSE,17.91,0,0,Credit Card,no,0
+6,Bun Fi,,N/A,0000-00-00,9999-99-99,0,,,2/13/19,15:17,Take-Out,4,muum,0,Yeo Sanchez,(468) 860-0535,posuere.enim.nisl@protonmail.net,TRUE,77.24,0,0.1,Cash,no,0
+7,Stacked & Sizzled,2221,"Wilson, James",2/17/23,4/8/23,10.25,12/22/77,,3/28/23,7:08,Breakfast,1,m,1,,,,FALSE,5.13,0.25,0,Cash,no,0
+8,Stacked & Sizzled,2731,"Brown, Olivia",10/21/19,7/7/23,19,,,12/8/21,15:51,Lunch,2,um,0,Norman Bishop,(888) 676-9746,semper.rutrum@google.org,TRUE,20.81,0.25,0.15,Credit Card,no,0
+9,Burger Haven,1916,"Hall, Lucas",4/22/24,5/17/24,10.25,10/8/03,791-43-3722,4/28/24,11:46,Breakfast,4,ufmf,1,,,,FALSE,37.7,0.18,0,Credit Card,no,0
+10,Stacked & Sizzled,2912,"Johnson, Michael",1/27/18,,26.5,1/11/97,518-90-3806,4/8/23,10:56,Breakfast,2,mu,0,Ross Hawkins,(745) 258-2759,commodo.hendrerit@protonmail.ca,TRUE,20.03,0.15,0.15,Mobile Payment,no,0
+11,Grill & Thrill,1886,"Carter, Grace",7/3/22,7/16/22,10.25,4/28/84,596-20-2242,7/9/22,11:57,Lunch,2,fu,10,,,,FALSE,16.08,0.15,0,Credit Card,no,0
+12,Grill & Thrill,1886,"Carter, Grace",7/3/22,7/16/22,10.25,4/28/84,596-20-2242,7/10/22,10:51,Breakfast,1,m,0,,,,FALSE,6.23,0.18,0,Credit Card,no,0
+13,Burger Haven,2770,"Thomas, Benjamin",5/27/22,8/11/22,10.25,4/17/85,192-19-7729,7/20/22,20:17,Dinner,3,mmf,0,Abbot Goodwin,(229) 623-3976,sed.et@yahoo.org,TRUE,62.64,0.15,0.1,Mobile Payment,yes,30.9375
+14,Bun Fi,,N/A,0000-00-00,9999-99-99,0,,,5/28/23,9:58,Breakfast,1,f,1,,,,FALSE,8.56,0.22,0,Credit Card,no,0
+15,The Burger Joint,2405,"Baker, Benjamin",7/4/18,,26.5,7/2/84,917-69-3373,1/29/21,13:34,Lunch,2,mu,0,Chancellor Sanchez,(250) 614-4577,amet@aol.org,TRUE,51.28,0.18,0.1,Cash,no,0
+16,Patty Palace,2018,"Adams, Chloe",1/2/18,2/9/21,17.75,8/11/72,248-68-7459,2/1/21,8:45,Take-Out,3,mmf,1,Imogene Ayala,(869) 714-5425,tristique@icloud.org,TRUE,67.56,0,0.1,Cash,no,0
+17,Big Bite Burgers,1499,"Hernandez, Charlotte",9/27/19,1/26/20,10.25,2/5/61,293-37-3959,1/4/20,16:26,Dinner,2,mu,0,Giacomo Henson,(472) 275-2645,mollis.duis@hotmail.com,TRUE,47.77,0.18,0.1,Mobile Payment,no,0
+18,Stacked & Sizzled,1968,"Rodriguez, Mason",3/6/20,,21.5,10/22/94,236-64-8714,6/21/23,20:14,Dinner,1,f,0,,,,FALSE,23.01,0.15,0,Cash,yes,10.3125
+19,Grill & Thrill,2980,"Wright, Matthew",5/13/24,,11.5,3/28/02,458-88-2635,6/23/24,13:15,Take-Out,1,f,0,,,,FALSE,23.52,0,0,Mobile Payment,no,0
+20,Burger Haven,2114,"King, Noah",11/2/20,,20.25,5/7/84,237-74-6327,2/18/24,9:09,Breakfast,2,mm,1,,,,FALSE,13.19,0.3,0,Credit Card,no,0
+21,Grill & Thrill,1373,"Roberts, Scarlett",3/14/23,1/18/24,11.5,8/22/03,498-69-1346,8/2/23,15:57,Lunch,1,f,0,,,,FALSE,10.4,0.25,0,Cash,no,0
+22,Flame Shack,,N/A,0000-00-00,9999-99-99,0,,,10/17/23,20:19,Dinner,2,fm,0,Geraldine Wallace,(655) 473-7865,lacinia.mattis@protonmail.ca,TRUE,43.23,0.15,0.1,Mobile Payment,yes,20.625
+23,Patty Palace,1961,"Clark, Abigail",9/10/21,9/19/23,15.25,1/23/02,951-69-4963,9/24/21,20:22,Dinner,2,uu,0,,,,FALSE,40.19,0.25,0,Mobile Payment,yes,20.625
+24,Flame Shack,,N/A,0000-00-00,9999-99-99,0,,,12/13/24,7:12,Breakfast,2,um,1,,,,FALSE,24.21,0.15,0,Credit Card,no,0
+25,Bite & Bun,1585,"Young, Jackson",12/24/23,6/6/24,10.25,9/2/73,302-59-9325,4/13/24,11:34,Lunch,4,fmmu,9,,,,FALSE,64.98,0.15,0,Cash,no,0
+26,Big Bite Burgers,2109,"White, Amelia K.",8/21/23,12/20/23,10.25,2/2/65,873-90-9629,11/16/23,11:44,Breakfast,3,ufm,1,,,,FALSE,15.26,0.25,0,Mobile Payment,no,0
+27,The Burger Joint,2405,"Baker, Benjamin",7/4/18,,26.5,7/2/84,917-69-3373,9/20/18,14:47,Lunch,4,fmfm,0,Carlos Briggs,(318) 679-7655,lectus@outlook.org,TRUE,43.84,0.2,0.1,Cash,no,0
+28,Bite & Bun,1024,"Hall, Noah",11/3/21,,17.75,9/27/92,189-47-6053,3/13/24,11:19,Breakfast,1,m,1,Macey Berger,(145) 364-6735,orci.donec@outlook.net,TRUE,5.93,0.2,0.1,Credit Card,no,0
+29,Bite & Bun,1024,"Hall, Noah",11/3/21,,17.75,9/27/92,189-47-6053,8/26/24,12:12,Lunch,1,f,11,Hilel Rocha,(494) 448-9414,cras.convallis@outlook.net,TRUE,16.14,0.25,0.1,Cash,no,0
+30,Patty Palace,2833,"Nelson, Harper",7/21/18,9/22/19,12.75,1/11/70,361-26-2959,12/13/18,18:21,Take-Out,2,nf,1,Lara Strong,(963) 614-6363,nibh.quisque@web.net,TRUE,37.93,0,0.1,Mobile Payment,no,0
+31,Patty Palace,1843,"Walker, Mia",10/24/22,,15.25,7/3/65,700-18-1686,11/25/22,7:54,Breakfast,1,f,1,,,,FALSE,7.98,0.18,0,Cash,no,0
+32,Stacked & Sizzled,2731,"Brown, Olivia",10/21/19,7/7/23,19,,,11/7/21,16:29,Dinner,1,m,0,Kelly Wood,(570) 636-1222,vel@hotmail.org,TRUE,20.74,0.2,0.1,Mobile Payment,yes,10.3125
+33,The Burger Joint,2405,"Baker, Benjamin",7/4/18,,26.5,7/2/84,917-69-3373,9/17/23,14:45,Lunch,2,mf,0,Daquan Gallagher,(858) 462-2362,mollis@hotmail.com,TRUE,19.18,0.18,0.1,Cash,no,0
+34,Patty Palace,2018,"Adams, Chloe",1/2/18,2/9/21,17.75,8/11/72,248-68-7459,11/25/18,13:16,Lunch,4,mfmf,0,,,,FALSE,71.22,0.15,0,Credit Card,no,0
+35,Flame Shack,,N/A,0000-00-00,9999-99-99,0,,,7/13/23,20:27,Dinner,6,ummffm,0,,,,FALSE,123.47,0.2,0,Mobile Payment,no,0
+36,Patty Palace,2770,"Thomas, Benjamin",5/27/22,8/11/22,10.25,4/17/85,192-19-7729,7/25/22,5:25,Breakfast,2,fu,0,,,,FALSE,13.73,0.15,0,Credit Card,no,0
+37,The Burger Joint,3333,"Lewis, Ethan",9/3/18,1/9/19,10.25,6/2/07,,11/3/18,6:28,Breakfast,2,mm,0,Emerson Willis,(762) 542-4542,diam.lorem@web.org,TRUE,16.05,0.25,0.1,Credit Card,no,0
+38,Burger Haven,2522,"Jackson, Oliver",8/5/18,8/30/18,10.25,3/9/73,820-52-8087,8/14/18,23:15,Take-Out,1,f,0,Daquan Gallagher,(858) 462-2362,mollis@hotmail.com,TRUE,15.94,0,0.1,Mobile Payment,no,0
+39,Big Bite Burgers,1939,"Scott, Olivia",7/11/19,9/8/22,17.75,2/1/83,287-41-7975,2/26/20,8:26,Breakfast,4,mnmm,1,,,,FALSE,35.51,0.18,0,Cash,no,0
+40,Bun Fi,,N/A,0000-00-00,9999-99-99,0,,,5/16/24,7:36,Take-Out,2,uf,1,,,,FALSE,49.5,0,0,Credit Card,no,0
+41,Patty Palace,1236,"Baker, Samuel",4/10/24,8/8/24,10.25,10/22/72,902-11-4766,7/23/24,15:22,Lunch,3,mmm,0,,,,FALSE,37.26,0.15,0,Mobile Payment,no,0
+42,Flame Shack,,N/A,0000-00-00,9999-99-99,0,,,7/19/24,18:22,Dinner,4,mmfn,10,Emerson Willis,(762) 542-4542,diam.lorem@web.org,TRUE,77.3,0.2,0.15,Mobile Payment,yes,41.25
+43,Burger Haven,1916,"Hall, Lucas",4/22/24,5/17/24,10.25,10/8/03,791-43-3722,4/27/24,18:07,Dinner,2,uf,7,Daquan Gallagher,(858) 462-2362,mollis@hotmail.com,TRUE,35.91,0.15,0.15,Cash,yes,20.625
+44,Big Bite Burgers,1658,"Smith, Emily",1/14/20,,21.5,5/27/04,881-56-2018,8/10/24,14:35,Take-Out,3,muu,0,,,,FALSE,64.24,0,0,Cash,no,0
+45,Burger Haven,2522,"Jackson, Oliver",8/5/18,8/30/18,10.25,3/9/73,820-52-8087,8/10/18,6:43,Breakfast,1,f,0,,,,FALSE,9.57,0.15,0,Mobile Payment,no,0
+46,Grill & Thrill,3048,"Nelson, Isabella",5/16/19,,24,,605-84-2363,9/27/23,23:52,Take-Out,5,fmmuu,0,,,,FALSE,92.68,0,0,Credit Card,no,0
+47,The Burger Joint,3333,"Lewis, Ethan",9/3/18,1/9/19,10.25,6/2/07,,10/29/18,20:17,Dinner,4,fmfu,0,Emerson Willis,(762) 542-4542,diam.lorem@web.org,TRUE,77.19,0.15,0.1,Cash,yes,41.25
+48,Bite & Bun,1921,"Walker, Grace",3/7/20,,21.5,1/5/96,672-38-8835,8/20/23,13:45,Lunch,2,mf,0,Daquan Gallagher,(858) 462-2362,mollis@hotmail.com,TRUE,29.17,0.18,0.15,Cash,no,0
+49,The Burger Joint,2405,"Baker, Benjamin",7/4/18,,26.5,7/2/84,917-69-3373,4/17/21,17:43,Take-Out,1,m,0,,,,FALSE,17.89,0,0,Cash,no,0
+50,Bite & Bun,1585,"Young, Jackson",12/24/23,6/6/24,10.25,9/2/73,302-59-9325,1/18/24,20:14,Dinner,4,fmff,0,,,,FALSE,77.97,0.15,0,Mobile Payment,yes,41.25

@@ -1,0 +1,180 @@
+---
+title: "Analyze Sales"
+author: "Krishnappa, Kushal"
+date: "Spring 2025"
+output:
+  pdf_document:
+    keep_tex: true
+  html_document:
+    df_print: paged
+subtitle: CS5200 Practicum 1
+always_allow_html: true
+---
+
+```{r cleanEnvironment, echo=FALSE,warning=FALSE, eval=TRUE}
+# clean the environment
+rm(list = ls())
+```
+
+```{r installAndLoadRequiredPackages, echo=FALSE, warning=FALSE, eval=TRUE}
+#*****************************************
+#* Install Required Packages
+#* @param packages - list of packages
+#*****************************************
+installPackagesOnDemand <- function(packages) {
+  installed_packages <- packages %in% rownames(installed.packages())
+  if (any(installed_packages == FALSE)) {
+    install.packages(packages[!installed_packages])
+  }
+}
+
+#*****************************************
+#* Load Required Packages
+#* @param packages - list of packages
+#*****************************************
+loadRequiredPackages <- function(packages) {
+  # load required packages
+  for (package in packages) {
+    suppressMessages({
+      library(package, character.only = TRUE)
+    })
+  }
+}
+
+# required packages
+packages <- c("RMySQL", "DBI", "testthat", "kableExtra", "tinytex")
+  
+# install and load required packages
+installPackagesOnDemand(packages)
+loadRequiredPackages(packages)
+```
+
+```{r connectToDatabase, echo=FALSE, warning=FALSE, eval=TRUE}
+#*****************************************
+#* Close Db Connections Over Threshold
+#*****************************************
+closeDbConnectionsOverThreshold <- function() {
+  threshold <- 10 # Aiven allows 16 open connections, threshold is set to 10
+  currentOpenConnections <- dbListConnections(MySQL())
+  if (length(currentOpenConnections) > threshold) {
+    for (conn in currentOpenConnections) {
+      dbDisconnect(conn)
+    }
+  }
+}
+
+#*****************************************
+#* Connect to MySQL Database
+#*****************************************
+connectToDatabase <- function() {
+  # db credentials
+  dbName <- "defaultdb"
+  dbUser <- "avnadmin"
+  dbPassword <- "AVNS_-yK2PI98zqMdU4P-eud"
+  dbHost <- "krishnappak-db-cs5200-dbms.d.aivencloud.com"
+  dbPort <- 20057
+  
+  tryCatch({
+    closeDbConnectionsOverThreshold() # Aiven allows 16 open connections
+    dbCon <- dbConnect(
+      RMySQL::MySQL(),
+      user = dbUser,
+      password = dbPassword,
+      dbname = dbName,
+      host = dbHost,
+      port = dbPort
+    )
+    return(dbCon)
+  }, error = function(err) {
+    stop("Database connection failed.")
+  })
+}
+
+# connect to database
+dbCon <- connectToDatabase()
+```
+
+## **Analysis by Restaurant**
+```{r restaurantAnalytics, echo=FALSE, warning=FALSE, eval=TRUE}
+# SQL query to fetch restaurant analytics
+
+query <- "
+SELECT 
+    r.restaurantName AS `Restaurant`,
+    COUNT(v.visitId) AS `Total Visits`,
+    COUNT(DISTINCT c.customerId) AS `Unique Customers`,
+    COUNT(DISTINCT CASE WHEN c.loyaltyMember = TRUE THEN c.customerId END) AS `Loyalty Customers`,
+    SUM(b.foodBill + COALESCE(ab.alcoholBill, 0)) AS `Total Revenue (Food + Alcohol)`
+FROM Visit v
+JOIN Restaurant r ON v.restaurantId = r.restaurantId
+JOIN Customer c ON v.customerId = c.customerId
+JOIN Billing b ON v.visitId = b.visitID
+LEFT JOIN AlcoholBilling ab ON b.billingId = ab.billingId
+WHERE c.loyaltyMember = TRUE
+GROUP BY r.restaurantName
+ORDER BY `Total Revenue (Food + Alcohol)` DESC;
+"
+
+# Execute query
+result <- dbGetQuery(dbCon, query)
+
+# Format and display the table using kableExtra
+kable(result, format = "latex", booktabs = TRUE, caption = "Restaurant Revenue Analysis", align = "c") %>%
+    kable_styling(latex_options = c("striped", "hold_position")) %>%
+    column_spec(1, width = "4cm", bold = TRUE) %>%
+    column_spec(2:4, width = "2cm") %>%
+    column_spec(5, width = "3cm") 
+```
+
+## **Analysis by Year**
+```{r yearAnalytics, echo=FALSE, warning=FALSE, eval=TRUE}
+# SQL query to analyze revenue by year
+query_year <- "
+SELECT 
+    YEAR(v.visitDate) AS `Year`,
+    SUM(b.foodBill + COALESCE(ab.alcoholBill, 0)) AS `Total Revenue (Food + Alcohol)`,
+    ROUND(SUM(b.foodBill + COALESCE(ab.alcoholBill, 0)) / COUNT(v.visitId), 2) AS `Avg Per Party Spent`,
+    ROUND(AVG(v.partySize), 2) AS `Avg Party Size`
+FROM Visit v
+JOIN Billing b ON v.visitId = b.visitID
+LEFT JOIN AlcoholBilling ab ON b.billingId = ab.billingId
+GROUP BY `Year`
+ORDER BY `Year` ASC;
+"
+
+# Execute query
+result_year <- dbGetQuery(dbCon, query_year)
+
+# Format dynamically with years as columns
+kable(result_year, format = "latex", booktabs = TRUE, caption = "Annual Revenue Analysis", align = "c") %>%
+    kable_styling(latex_options = c("striped", "hold_position")) %>%
+    column_spec(1, width = "3cm", bold = TRUE) %>%
+    column_spec(2, width = "3cm") %>%
+    column_spec(3, width = "3cm")
+```
+
+## **Trend by Year**
+```{r yearTrend, echo=FALSE, warning=FALSE, eval=TRUE, fig.width=12, fig.height=8}
+# Extract year and revenue data for plotting
+years <- result_year$Year
+revenue <- result_year$`Total Revenue (Food + Alcohol)`
+
+# Create the line chart
+plot(years, revenue, type = "o", col = "purple", lwd = 2, pch = 16,
+     xlab = "Year", ylab = "Total Revenue (Food + Alcohol)",
+     main = "Trend of Total Revenue by Year")
+
+# Add grid lines
+grid()
+
+# Add data labels
+text(years, revenue, labels = round(revenue, 2), pos = 3, cex = 0.9, col = "red")
+
+# Add a legend
+legend("topleft", legend = "Total Revenue", col = "purple", lty = 1, lwd = 2, pch = 16)
+
+```
+
+```{r closeConnection, echo=FALSE, warning=FALSE, eval=TRUE}
+invisible(dbDisconnect(dbCon))
+```
