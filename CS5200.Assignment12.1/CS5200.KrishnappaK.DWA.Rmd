@@ -1,0 +1,48 @@
+---
+title: "ASSIGNMENT 12.1"
+subtitle: "Explore Data Warehouses"
+author: "Krishnappa, Kushal"
+date: "Spring 2025"
+output:
+  pdf_document: default
+---
+
+## Question 4
+```{r createSakilaOLAP, echo=TRUE, eval=TRUE, warning=FALSE}
+# clear the environment
+rm(list=ls())
+
+#*****************************************
+#* Install Required Packages
+#* @param packages - list of packages
+#*****************************************
+installPackagesOnDemand <- function(packages) {
+  installed_packages <- packages %in% rownames(installed.packages())
+  if (any(installed_packages == FALSE)) {
+    install.packages(packages[!installed_packages])
+  }
+}
+
+#*****************************************
+#* Load Required Packages
+#* @param packages - list of packages
+#*****************************************
+loadRequiredPackages <- function(packages) {
+  # load required packages
+  for (package in packages) {
+    suppressMessages({
+      library(package, character.only = TRUE)
+    })
+  }
+}
+
+# required packages
+packages <- c("RSQLite", "DBI")
+  
+# install and load required packages
+installPackagesOnDemand(packages)
+loadRequiredPackages(packages)
+```
+
+```
+
