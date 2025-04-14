@@ -1,0 +1,238 @@
+---
+title: "Analysis of Film and Music Sales for Media Distributors, Inc."
+subtitle: "Prepared by Oakland Partners"
+author: "Krishnappa, Kushal"
+date: "Spring 2025"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    collapsed: true
+    number_sections: true
+    theme: paper
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+# Function to install packages on demand
+installPackagesOnDemand <- function(packages) {
+  installed_packages <- packages %in% rownames(installed.packages())
+  if (any(!installed_packages)) {
+    install.packages(packages[!installed_packages], repos = "https://cran.rstudio.com/")
+  }
+}
+
+# Function to load required packages
+loadRequiredPackages <- function(packages) {
+  for (package in packages) {
+    suppressMessages(library(package, character.only = TRUE))
+  }
+}
+
+# Install and load necessary packages
+installPackagesOnDemand(c("RMySQL", "DBI", "knitr", "kableExtra", "ggplot2", "scales", "lubridate", "dplyr"))
+loadRequiredPackages(c("RMySQL", "DBI", "knitr", "kableExtra", "ggplot2", "scales", "lubridate", "dplyr"))
+
+# Function to connect to the cloud MySQL database
+connectToMySQL <- function() {
+  dbName <- "defaultdb"
+  dbUser <- "avnadmin"
+  dbPassword <- "AVNS_-yK2PI98zqMdU4P-eud"
+  dbHost <- "krishnappak-db-cs5200-dbms.d.aivencloud.com"
+  dbPort <- 20057
+  
+  con <- tryCatch(
+    {
+      dbConnect(
+        RMySQL::MySQL(),
+        user = dbUser,
+        password = dbPassword,
+        dbname = dbName,
+        host = dbHost,
+        port = dbPort
+      )
+    },
+    error = function(e) {
+      return(e$message)
+    }
+  )
+  return(con)
+}
+
+# Function to execute SQL query with error handling
+executeQuery <- function(con, sqlQuery) {
+  result <- tryCatch(
+    {
+      suppressWarnings(dbGetQuery(con, sqlQuery))
+    },
+    error = function(e) {
+      print(paste("SQL query failed:", e$message))
+      return(NULL)
+    }
+  )
+  return(result)
+}
+
+# Connect to MySQL database
+mysqlCon <- connectToMySQL()
+if (is.character(mysqlCon)) {
+  stop(paste("Failed to connect to MySQL database:", mysqlCon))
+}
+
+# Get the years range in the database for dynamic reporting
+years_data <- executeQuery(mysqlCon, "SELECT MIN(year) as min_year, MAX(year) as max_year FROM dim_time WHERE time_key IN (SELECT DISTINCT time_key FROM sales_facts)")
+min_year <- years_data$min_year[1]
+max_year <- years_data$max_year[1]
+latest_year <- max_year
+previous_year <- max_year - 1
+```
+
+# Background
+
+Media Distributors, Inc. is a Wichita, KY based distributor and seller of films and music for commercial purposes. For the past few years, it has managed its film and music sales separately using different applications. This division is historical as Media Distributors started distributing films and then acquired SoundMania about two years ago. As the two distribution channels were different, CTO Alvin Coelho made the decision not to integrate the SoundMania's information systems and database with those of Media Distributors. This has not been a problem until now, however Media Distributors intends to make itself available for acquisition. To that end, an integrated view of the business, particularly sales, is needed.
+
+This report provides key sales, revenue, and customer metrics to showcase Media Distributors business. The analysis provided is based on data from a custom-built datamart containing data extracted from two operational databases.
+
+# Key Business Metrics
+
+This sections provides key revenue and customer information segmented by time, country, and business unit. Revenue numbers are in US$.
+
+## Sales Revenue
+
+```{r totalRevenue}
+# Get total revenue for the latest year
+totalRevenueQuery <- sprintf("
+  SELECT 
+    dt.year,
+    SUM(sf.amount) as total_revenue
+  FROM sales_facts sf
+  JOIN dim_time dt ON sf.time_key = dt.time_key
+  WHERE dt.year = %d
+  GROUP BY dt.year
+", latest_year)
+
+totalRevenueData <- executeQuery(mysqlCon, totalRevenueQuery)
+latest_year_revenue <- dollar(totalRevenueData$total_revenue[1])
+
+# Get top country by revenue for the previous year
+topCountryQuery <- sprintf("
+  SELECT 
+    dl.country,
+    dt.year,
+    SUM(sf.amount) as total_revenue
+  FROM sales_facts sf
+  JOIN dim_location dl ON sf.location_key = dl.location_key
+  JOIN dim_time dt ON sf.time_key = dt.time_key
+  WHERE dt.year = %d
+  GROUP BY dl.country, dt.year
+  ORDER BY total_revenue DESC
+  LIMIT 1
+", previous_year)
+
+topCountryData <- executeQuery(mysqlCon, topCountryQuery)
+top_country <- topCountryData$country[1]
+top_country_revenue <- dollar(topCountryData$total_revenue[1])
+
+# Get second top country by revenue for the previous year
+secondCountryQuery <- sprintf("
+  SELECT 
+    dl.country,
+    dt.year,
+    SUM(sf.amount) as total_revenue
+  FROM sales_facts sf
+  JOIN dim_location dl ON sf.location_key = dl.location_key
+  JOIN dim_time dt ON sf.time_key = dt.time_key
+  WHERE dt.year = %d
+  GROUP BY dl.country, dt.year
+  ORDER BY total_revenue DESC
+  LIMIT 1 OFFSET 1
+", previous_year)
+
+secondCountryData <- executeQuery(mysqlCon, secondCountryQuery)
+second_country <- secondCountryData$country[1]
+second_country_revenue <- dollar(secondCountryData$total_revenue[1])
+```
+
+The year with the most sales was `r latest_year` with a total revenue across both business units of `r latest_year_revenue`. The country with the most sales was `r top_country` with total sales across both business units in `r previous_year` of `r top_country_revenue`. It was followed by the `r second_country` with `r second_country_revenue`.
+
+The table below shows sales revenue by country and ordered by total sales for the two most recent years, `r previous_year` and `r latest_year`. The table is restricted to the top five countries with the most sales. The column 'Total' in the table represents the total for all years for which there is data and not just the past two years.
+
+```{r revenueByCountry}
+# Get revenue by country for the top 5 countries for the last two years
+revenueByCountryQuery <- sprintf("
+  SELECT 
+    dl.country,
+    SUM(CASE WHEN dt.year = %d THEN sf.amount ELSE 0 END) as revenue_prev_year,
+    SUM(CASE WHEN dt.year = %d THEN sf.amount ELSE 0 END) as revenue_latest_year,
+    SUM(sf.amount) as total_revenue
+  FROM sales_facts sf
+  JOIN dim_location dl ON sf.location_key = dl.location_key
+  JOIN dim_time dt ON sf.time_key = dt.time_key
+  GROUP BY dl.country
+  ORDER BY total_revenue DESC
+  LIMIT 5
+", previous_year, latest_year)
+
+revenueByCountry <- executeQuery(mysqlCon, revenueByCountryQuery)
+
+# Format for display
+revenueByCountry$revenue_prev_year <- dollar(revenueByCountry$revenue_prev_year)
+revenueByCountry$revenue_latest_year <- dollar(revenueByCountry$revenue_latest_year)
+revenueByCountry$total_revenue <- dollar(revenueByCountry$total_revenue)
+
+# Create table
+kable(revenueByCountry, 
+      col.names = c("Country", previous_year, latest_year, "Total (All Years)"),
+      align = c("l", "r", "r", "r"),
+      caption = "Total Revenue For Top Five Countries For Most Recent Two Years") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+                full_width = TRUE) %>%
+  row_spec(0, bold = TRUE, background = "#f0f0f0")
+```
+
+The table below shows the revenue broken down by quarter for the top five countries. It shows the total revenue for each quarter across all business units and years. So, for example, the column "Q1" is the total sales for music and film for all years for which there is data, which is from `r min_year` to `r max_year`.
+
+```{r quarterlyRevenueByCountry}
+# Get quarterly revenue by country for the top 5 countries
+quarterlyRevenueQuery <- "
+  SELECT 
+    dl.country,
+    SUM(CASE WHEN dt.quarter = 1 THEN sf.amount ELSE 0 END) as q1_revenue,
+    SUM(CASE WHEN dt.quarter = 2 THEN sf.amount ELSE 0 END) as q2_revenue,
+    SUM(CASE WHEN dt.quarter = 3 THEN sf.amount ELSE 0 END) as q3_revenue,
+    SUM(CASE WHEN dt.quarter = 4 THEN sf.amount ELSE 0 END) as q4_revenue,
+    AVG(sf.amount) as avg_revenue
+  FROM sales_facts sf
+  JOIN dim_location dl ON sf.location_key = dl.location_key
+  JOIN dim_time dt ON sf.time_key = dt.time_key
+  GROUP BY dl.country
+  ORDER BY (q1_revenue + q2_revenue + q3_revenue + q4_revenue) DESC
+  LIMIT 5
+"
+
+quarterlyRevenue <- executeQuery(mysqlCon, quarterlyRevenueQuery)
+
+# Format for display
+quarterlyRevenue$q1_revenue <- dollar(quarterlyRevenue$q1_revenue)
+quarterlyRevenue$q2_revenue <- dollar(quarterlyRevenue$q2_revenue)
+quarterlyRevenue$q3_revenue <- dollar(quarterlyRevenue$q3_revenue)
+quarterlyRevenue$q4_revenue <- dollar(quarterlyRevenue$q4_revenue)
+quarterlyRevenue$avg_revenue <- dollar(quarterlyRevenue$avg_revenue)
+
+# Create column names including the year range
+column_names <- c("Country", "Q1", "Q2", "Q3", "Q4", "Average")
+
+# Create and render the table without the add_header_above function
+result_table <- kable(quarterlyRevenue, 
+      col.names = column_names,
+      align = c("l", "r", "r", "r", "r", "r"),
+      caption = paste0("Cumulative and Average Quarterly Revenue (", min_year, " to ", max_year, ")")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+                full_width = TRUE) %>%
+  row_spec(0, bold = TRUE, background = "#f0f0f0")
+
+result_table
+```
